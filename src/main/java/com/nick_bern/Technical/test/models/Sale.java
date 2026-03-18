@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,4 +27,7 @@ public class Sale {
 
     @ManyToOne
     private Store store;
+
+    @OneToMany(mappedBy = "sale")
+    private List<SaleDetail> details = new ArrayList<>();
 }
