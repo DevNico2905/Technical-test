@@ -21,6 +21,8 @@ public class Sale {
 
     private String status;
 
+    private Double total;
+
     @ManyToOne
     private Store store;
 }
