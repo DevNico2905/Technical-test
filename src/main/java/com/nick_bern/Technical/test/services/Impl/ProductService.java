@@ -1,12 +1,12 @@
 package com.nick_bern.Technical.test.services.Impl;
 
 import com.nick_bern.Technical.test.dtos.ProductDTO;
+import com.nick_bern.Technical.test.exceptions.NotFoundException;
 import com.nick_bern.Technical.test.mappers.Mappers;
 import com.nick_bern.Technical.test.models.Product;
 import com.nick_bern.Technical.test.repositories.ProductRepository;
 import com.nick_bern.Technical.test.services.IProductService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -35,10 +35,9 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    @SneakyThrows
     public ProductDTO updateProduct(Long idProduct, ProductDTO productDTO) {
         Product productEntity = productRepo.findById(idProduct)
-                .orElseThrow(() -> new Exception("Product with id: " + idProduct + " not found!"));
+                .orElseThrow(() -> new NotFoundException("Product with id: " + idProduct + " not found!"));
 
         productEntity.setProductName(productDTO.getProductName());
         productEntity.setCategory(productDTO.getCategory());
