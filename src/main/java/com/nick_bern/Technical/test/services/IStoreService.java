@@ -8,7 +8,7 @@ public interface IStoreService {
 
     List<StoreDTO> findAllStores();
 
-    StoreDTO createStore(StoreDTO newStore);
+    StoreDTO createStore(StoreDTO store);
 
     StoreDTO updateStore(Long idStore, StoreDTO store);
 
