@@ -6,10 +6,9 @@ import com.nick_bern.Technical.test.models.Product;
 import com.nick_bern.Technical.test.repositories.ProductRepository;
 import com.nick_bern.Technical.test.services.IProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -36,9 +35,19 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public ProductDTO updateProduct(Long idProduct, ProductDTO product) {
-        Optional<Product> productExists = productRepo.findById(idProduct);
-        return null;
+    @SneakyThrows
+    public ProductDTO updateProduct(Long idProduct, ProductDTO productDTO) {
+        Product productEntity = productRepo.findById(idProduct)
+                .orElseThrow(() -> new Exception("Product with id: " + idProduct + " not found!"));
+
+        productEntity.setProductName(productDTO.getProductName());
+        productEntity.setCategory(productDTO.getCategory());
+        productEntity.setStock(productDTO.getStock());
+        productEntity.setPrice(productDTO.getPrice());
+
+        Product updatedProduct = productRepo.save(productEntity);
+
+        return Mappers.toDTO(updatedProduct);
     }
 
     @Override
