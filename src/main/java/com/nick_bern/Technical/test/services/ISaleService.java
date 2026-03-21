@@ -7,7 +7,7 @@ public interface ISaleService {
 
     List<SaleDTO> getAllSales();
 
-    SaleDTO createSale(SaleDTO newSale);
+    SaleDTO createSale(SaleDTO sale);
 
     SaleDTO updateSale(Long idSale, SaleDTO sale);
 
