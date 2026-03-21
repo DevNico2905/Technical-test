@@ -3,7 +3,9 @@ package com.nick_bern.Technical.test.services.Impl;
 import com.nick_bern.Technical.test.dtos.SaleDTO;
 import com.nick_bern.Technical.test.exceptions.NotFoundException;
 import com.nick_bern.Technical.test.mappers.Mappers;
+import com.nick_bern.Technical.test.repositories.ProductRepository;
 import com.nick_bern.Technical.test.repositories.SaleRepository;
+import com.nick_bern.Technical.test.repositories.StoreRepository;
 import com.nick_bern.Technical.test.services.ISaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,8 @@ import java.util.List;
 public class SaleService implements ISaleService {
 
     private final SaleRepository saleRepo;
+    private final ProductRepository productRepo;
+    private final StoreRepository storeRepo;
 
     @Override
     public List<SaleDTO> getAllSales() {
