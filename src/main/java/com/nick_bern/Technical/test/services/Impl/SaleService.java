@@ -12,6 +12,7 @@ import com.nick_bern.Technical.test.repositories.ProductRepository;
 import com.nick_bern.Technical.test.repositories.SaleRepository;
 import com.nick_bern.Technical.test.repositories.StoreRepository;
 import com.nick_bern.Technical.test.services.ISaleService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,47 +34,56 @@ public class SaleService implements ISaleService {
     }
 
     @Override
+    @Transactional
     public SaleDTO createSale(SaleDTO sale) {
 
-        if (sale == null) throw new RuntimeException("Sale is null");
-        if (sale.getStoreId() == null) throw new RuntimeException("A store must be include!");
-        if (sale.getDetail() == null || sale.getDetail().isEmpty())
-            throw new RuntimeException("At least a product have to be included");
+        validateSale(sale);
 
-        Store store = storeRepo.findById(sale.getId()).orElseThrow(() -> new NotFoundException("Store not found!"));
+        Store store = storeRepo.findById(sale.getStoreId()).orElseThrow(() -> new NotFoundException("Store not found!"));
 
+        Sale newSale = Sale.builder()
+                .date(sale.getDate())
+                .status(sale.getStatus())
+                .store(store)
+                .build();
+
+        double total = 0;
         List<SaleDetail> details = new ArrayList<>();
 
         for (SaleDetailDTO sdDTO : sale.getDetail()){
             Product product = productRepo.findProductByProductName(sdDTO.getProductName())
-                    .orElseThrow(() -> new NotFoundException("Product with id:" + sdDTO.getId() + " not found!"));
+                    .orElseThrow(() -> new NotFoundException("Product " + sdDTO.getProductName() + " not found!"));
 
             SaleDetail detail = SaleDetail.builder()
-                    .id(sdDTO.getId())
-                    .sale(saleRepo.findById(sdDTO.getId())
-                            .orElseThrow(() -> new NotFoundException("Sale not found")))
+                    .sale(newSale)
                     .product(product)
                     .quantity(sdDTO.getQtyProduct())
-                    .unitPrice(sdDTO.getPrice())
+                    .unitPrice(product.getPrice())
                     .build();
+
+            total += detail.getUnitPrice() * detail.getQuantity();
+
+            newSale.setTotal(total);
+            newSale.setDetails(details);
 
             details.add(detail);
         }
-
-        Sale newSale = Sale.builder()
-                .id(sale.getId())
-                .date(sale.getDate())
-                .status(sale.getStatus())
-                .total(sale.getTotal())
-                .store(store)
-                .details(details)
-                .build();
 
         return Mappers.toDTO(saleRepo.save(newSale));
     }
 
     @Override
     public SaleDTO updateSale(Long idSale, SaleDTO sale) {
+        Sale saleEntity = saleRepo.findById(idSale)
+                .orElseThrow(() -> new NotFoundException("Sale not found!"));
+
+        if (sale == null) throw new RuntimeException("Sale is null");
+        if (sale.getStoreId() == null) throw new RuntimeException("A store must be include!");
+        if (sale.getDetail() == null || sale.getDetail().isEmpty())
+            throw new RuntimeException("At least a product have to be included");
+
+
+
         return null;
     }
 
@@ -83,6 +93,19 @@ public class SaleService implements ISaleService {
             throw new NotFoundException("Sale with id: " + idSale + " not found!");
         } else {
             saleRepo.deleteById(idSale);
+        }
+    }
+
+
+    private void validateSale(SaleDTO saleDTO) {
+        if (saleDTO == null) {
+            throw new RuntimeException("Sale data is required (null)");
+        }
+        if (saleDTO.getStoreId() == null) {
+            throw new RuntimeException("A store ID must be included!");
+        }
+        if (saleDTO.getDetail() == null || saleDTO.getDetail().isEmpty()) {
+            throw new RuntimeException("At least one product must be included in the sale");
         }
     }
 }
