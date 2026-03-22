@@ -27,6 +27,10 @@ public class Sale {
     @ManyToOne
     private Store store;
 
-    @OneToMany(mappedBy = "sale")
+    @OneToMany(
+            mappedBy = "sale",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<SaleDetail> details = new ArrayList<>();
 }

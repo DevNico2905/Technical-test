@@ -63,28 +63,50 @@ public class SaleService implements ISaleService {
 
             total += detail.getUnitPrice() * detail.getQuantity();
 
-            newSale.setTotal(total);
-            newSale.setDetails(details);
-
             details.add(detail);
         }
+
+        newSale.setTotal(total);
+        newSale.setDetails(details);
 
         return Mappers.toDTO(saleRepo.save(newSale));
     }
 
     @Override
+    @Transactional
     public SaleDTO updateSale(Long idSale, SaleDTO sale) {
         Sale saleEntity = saleRepo.findById(idSale)
                 .orElseThrow(() -> new NotFoundException("Sale not found!"));
 
-        if (sale == null) throw new RuntimeException("Sale is null");
-        if (sale.getStoreId() == null) throw new RuntimeException("A store must be include!");
-        if (sale.getDetail() == null || sale.getDetail().isEmpty())
-            throw new RuntimeException("At least a product have to be included");
+        validateSale(sale);
 
+        Store store = storeRepo.findById(sale.getStoreId()).orElseThrow(()  -> new NotFoundException("Store not found!"));
 
+        saleEntity.setDate(sale.getDate());
+        saleEntity.setStatus(sale.getStatus());
+        saleEntity.setStore(store);
 
-        return null;
+        saleEntity.getDetails().clear();
+
+        double total = 0;
+        for (SaleDetailDTO SdDtoEntity : sale.getDetail()){
+            Product productEntity = productRepo.findProductByProductName(SdDtoEntity.getProductName())
+                    .orElseThrow(() -> new NotFoundException("Product " + SdDtoEntity.getProductName() + " not found!"));
+
+            SaleDetail detail = SaleDetail.builder()
+                    .sale(saleEntity)
+                    .product(productEntity)
+                    .quantity(SdDtoEntity.getQtyProduct())
+                    .unitPrice(productEntity.getPrice())
+                    .build();
+
+            total += detail.getUnitPrice() * detail.getQuantity();
+            saleEntity.getDetails().add(detail);
+        }
+
+        saleEntity.setTotal(total);
+
+        return Mappers.toDTO(saleRepo.save(saleEntity));
     }
 
     @Override
